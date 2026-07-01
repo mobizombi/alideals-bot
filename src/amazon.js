@@ -51,13 +51,15 @@ function normalize(entry) {
 }
 
 /**
- * Return up to `want` curated Amazon products that haven't been posted yet,
- * in catalog order (so you control priority by ordering the JSON).
+ * Return up to `want` curated Amazon products in catalog order (so you control
+ * priority by ordering the JSON). By default skips ones already posted to
+ * Telegram; pass { includePosted: true } (used for the X generator, a separate
+ * channel) to return everything.
  */
-export async function getAmazonDeals(want = 1) {
+export async function getAmazonDeals(want = 1, { includePosted = false } = {}) {
   const all = loadCatalog()
     .filter((e) => e && e.asin && e.title && e.image)
     .map(normalize)
-    .filter((p) => !wasPosted(p.id));
+    .filter((p) => includePosted || !wasPosted(p.id));
   return all.slice(0, want);
 }

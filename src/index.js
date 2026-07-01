@@ -22,11 +22,17 @@ const commands = {
     await runOnce(n, { force, source: 'ali' });
   },
 
-  // Post N curated Amazon products from data/amazon-products.json.
+  // Post N curated Amazon products from data/amazon-products.json to Telegram.
   async amazon() {
     const n = Number(arg('--count', 1));
     const force = process.argv.includes('--force');
     await runOnce(n, { force, source: 'amazon' });
+  },
+
+  // Generate an HTML page of X.com-ready Amazon posts (bootstrap channel).
+  async ['x-posts']() {
+    const { generateXPosts } = await import('./xposts.js');
+    await generateXPosts();
   },
 
   // Run forever on the configured cron schedule.
@@ -68,6 +74,7 @@ const commands = {
 Usage:
   node src/index.js post [--count N]   Post N AliExpress deals now (default ${config.posting.perRun})
   node src/index.js amazon [--count N]  Post N curated Amazon products now
+  node src/index.js x-posts             Build X.com-ready Amazon posts (HTML)
   node src/index.js schedule           Run forever on POST_CRON (${config.posting.cron})
   node src/index.js test-ali           Check AliExpress API + show a sample product
   node src/index.js test-tg            Check Telegram bot + channel access
