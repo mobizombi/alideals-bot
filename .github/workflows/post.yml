@@ -1,0 +1,68 @@
+name: Post AliExpress deal
+
+# Free hosting via GitHub Actions: this runs on a schedule, posts a deal, and
+# commits the updated dedupe file back so products aren't repeated.
+on:
+  schedule:
+    # GitHub cron is UTC and DST-unaware, so we fire every 30 min across a UTC
+    # window (05:00-21:59) that covers Israel 08:00-24:00 in BOTH summer (UTC+3)
+    # and winter (UTC+2). The code then gates the actual post to the exact
+    # Israel window (POST_WINDOW_START/END in Asia/Jerusalem), so a run outside
+    # 08:00-24:00 Israel time simply skips. Net result: 2 posts/hour, 8am-midnight.
+    - cron: '*/30 5-21 * * *'
+  workflow_dispatch: {} # lets you run it manually from the Actions tab
+
+# Allow the job to push the updated data/posted.json back to the repo.
+permissions:
+  contents: write
+
+concurrency:
+  group: post-deal
+  cancel-in-progress: false
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - run: npm ci
+
+      - name: Post deal(s)
+        env:
+          ALI_APP_KEY: ${{ secrets.ALI_APP_KEY }}
+          ALI_APP_SECRET: ${{ secrets.ALI_APP_SECRET }}
+          ALI_TRACKING_ID: ${{ secrets.ALI_TRACKING_ID }}
+          TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
+          TG_CHANNEL: ${{ secrets.TG_CHANNEL }}
+          # Non-secret tuning (safe to keep here):
+          TARGET_LANGUAGE: EN
+          TARGET_CURRENCY: ILS
+          SHIP_TO_COUNTRY: IL
+          KEYWORDS: 'phone accessories,kitchen gadgets,home decor,smart watch,led lights,car accessories,tools'
+          MAX_PRICE: '120'
+          MIN_DISCOUNT: '40'
+          MIN_RATING: '85'
+          POSTS_PER_RUN: '1'
+          CAPTION_LANG: he
+          IMAGES_PER_POST: '3'
+          POST_WINDOW_START: '8'
+          POST_WINDOW_END: '24'
+          POST_TZ: Asia/Jerusalem
+        run: node src/index.js post
+
+      - name: Persist dedupe store
+        run: |
+          if [[ -n "$(git status --porcelain data/posted.json)" ]]; then
+            git config user.name "alideals-bot"
+            git config user.email "bot@users.noreply.github.com"
+            git add data/posted.json
+            git commit -m "chore: update posted deals [skip ci]"
+            git push
+          else
+            echo "No new deals to record."
+          fi

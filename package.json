@@ -1,0 +1,22 @@
+{
+  "name": "alideals-bot",
+  "version": "1.0.0",
+  "description": "Autonomous Telegram bot that posts cheap AliExpress deals with affiliate links",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "post": "node src/index.js post",
+    "post:once": "node src/index.js post --count 1",
+    "start": "node src/index.js schedule",
+    "test:ali": "node src/index.js test-ali",
+    "test:tg": "node src/index.js test-tg",
+    "seed": "node src/index.js seed"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "node-cron": "^3.0.3"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
