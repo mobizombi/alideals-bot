@@ -1,8 +1,15 @@
 import { config } from './config.js';
 import { getDeals } from './products.js';
-import { buildPost } from './format.js';
+import { getAmazonDeals } from './amazon.js';
+import { buildPost, buildAmazonPost } from './format.js';
 import { postDeal } from './telegram.js';
 import { markPosted } from './store.js';
+
+// A "source" bundles where deals come from and how their post is built.
+export const SOURCES = {
+  ali: { label: 'AliExpress', fetch: getDeals, build: buildPost },
+  amazon: { label: 'Amazon', fetch: getAmazonDeals, build: buildAmazonPost },
+};
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -25,14 +32,16 @@ export function withinWindow() {
 }
 
 /**
- * Run one posting cycle: fetch the best fresh deals and publish `count` of
- * them to the channel. Returns the number actually posted.
+ * Run one posting cycle: fetch fresh deals from a source and publish `count`
+ * of them to the channel. Returns the number actually posted.
  *
  * @param {number} count how many to post
- * @param {{force?: boolean}} opts force bypasses the active-hours window
+ * @param {{force?: boolean, source?: 'ali'|'amazon'}} opts
+ *        force bypasses the active-hours window; source selects the feed.
  */
-export async function runOnce(count = config.posting.perRun, { force = false } = {}) {
+export async function runOnce(count = config.posting.perRun, { force = false, source = 'ali' } = {}) {
   const stamp = new Date().toISOString();
+  const src = SOURCES[source] || SOURCES.ali;
 
   if (!force && !withinWindow()) {
     console.log(
@@ -41,18 +50,18 @@ export async function runOnce(count = config.posting.perRun, { force = false } =
     return 0;
   }
 
-  console.log(`\n[${stamp}] fetching up to ${count} deal(s)...`);
+  console.log(`\n[${stamp}] [${src.label}] fetching up to ${count} deal(s)...`);
 
-  const deals = await getDeals(count);
+  const deals = await src.fetch(count);
   if (!deals.length) {
-    console.log('No fresh deals matched the filters this run.');
+    console.log(`No fresh ${src.label} deals available this run.`);
     return 0;
   }
 
   let posted = 0;
   for (const deal of deals) {
     if (posted >= count) break;
-    const { caption, buttonText, followText, url } = buildPost(deal);
+    const { caption, buttonText, followText, url } = src.build(deal);
     try {
       await postDeal({
         image: deal.image,
@@ -64,15 +73,13 @@ export async function runOnce(count = config.posting.perRun, { force = false } =
       });
       markPosted(deal.id);
       posted += 1;
-      console.log(
-        `  ✓ posted ${deal.id} | ${deal.discount}% off | ${deal.price} ${deal.currency} | ${deal.title.slice(0, 50)}`
-      );
+      console.log(`  ✓ posted ${deal.id} | ${deal.title.slice(0, 55)}`);
     } catch (e) {
       console.warn(`  ✗ failed to post ${deal.id}: ${e.message}`);
     }
     if (posted < count) await sleep(config.posting.delaySeconds * 1000);
   }
 
-  console.log(`[${stamp}] done. posted ${posted}/${count}.`);
+  console.log(`[${stamp}] [${src.label}] done. posted ${posted}/${count}.`);
   return posted;
 }

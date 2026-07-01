@@ -14,12 +14,19 @@ function arg(flag, fallback) {
 const cmd = process.argv[2] || 'post';
 
 const commands = {
-  // Post N deals right now (default N = POSTS_PER_RUN). --force ignores the
-  // active-hours window (handy for a manual test outside 08:00-24:00).
+  // Post N AliExpress deals right now (default N = POSTS_PER_RUN). --force
+  // ignores the active-hours window (handy for a manual test outside 08:00-24:00).
   async post() {
     const n = Number(arg('--count', config.posting.perRun));
     const force = process.argv.includes('--force');
-    await runOnce(n, { force });
+    await runOnce(n, { force, source: 'ali' });
+  },
+
+  // Post N curated Amazon products from data/amazon-products.json.
+  async amazon() {
+    const n = Number(arg('--count', 1));
+    const force = process.argv.includes('--force');
+    await runOnce(n, { force, source: 'amazon' });
   },
 
   // Run forever on the configured cron schedule.
@@ -59,7 +66,8 @@ const commands = {
     console.log(`AliDealsBot
 
 Usage:
-  node src/index.js post [--count N]   Post N deals now (default ${config.posting.perRun})
+  node src/index.js post [--count N]   Post N AliExpress deals now (default ${config.posting.perRun})
+  node src/index.js amazon [--count N]  Post N curated Amazon products now
   node src/index.js schedule           Run forever on POST_CRON (${config.posting.cron})
   node src/index.js test-ali           Check AliExpress API + show a sample product
   node src/index.js test-tg            Check Telegram bot + channel access

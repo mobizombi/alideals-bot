@@ -42,6 +42,12 @@ export const config = {
     },
     gateway: opt('ALI_GATEWAY', 'https://api-sg.aliexpress.com/sync'),
   },
+  amazon: {
+    // Associates tag (Store ID). Every link carries ?tag=<this> to earn commission.
+    tag: opt('AMAZON_TAG', 'cheapadeal-20'),
+    // Storefront domain the tag belongs to (a "-20" tag is amazon.com / US).
+    domain: opt('AMAZON_DOMAIN', 'www.amazon.com'),
+  },
   telegram: {
     get token() {
       return req('TG_BOT_TOKEN');

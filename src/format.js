@@ -81,3 +81,37 @@ export function buildPost(product) {
     url,
   };
 }
+
+/**
+ * Amazon post. Per Amazon's terms we never show a static price (prices must be
+ * pulled live from their API), so the post shows the product + an optional hook
+ * and sends people to Amazon where the current price/deal is displayed.
+ */
+export function buildAmazonPost(product) {
+  const lang = config.posting.captionLang;
+  const url = product.promotionLink;
+  const title = esc(clip(product.title));
+  const note = product.note ? esc(product.note) : '';
+
+  if (lang === 'he') {
+    const lines = [`🛒 <b>${title}</b>`, ''];
+    if (note) lines.push(`✨ ${note}`);
+    lines.push('👇 בדקו את המחיר והמבצע העדכני באמזון');
+    return {
+      caption: lines.join('\n'),
+      buttonText: '🛒 למוצר באמזון',
+      followText: '👇 המחיר העדכני מופיע באמזון',
+      url,
+    };
+  }
+
+  const lines = [`🛒 <b>${title}</b>`, ''];
+  if (note) lines.push(`✨ ${note}`);
+  lines.push('👇 Check the current price & deal on Amazon');
+  return {
+    caption: lines.join('\n'),
+    buttonText: '🛒 View on Amazon',
+    followText: '👇 Live price shown on Amazon',
+    url,
+  };
+}
