@@ -39,6 +39,9 @@ jobs:
           ALI_TRACKING_ID: ${{ secrets.ALI_TRACKING_ID }}
           TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
           TG_CHANNEL: ${{ secrets.TG_CHANNEL }}
+          # Facebook Page cross-posting (optional; leave secrets unset to disable):
+          FB_PAGE_ID: ${{ secrets.FB_PAGE_ID }}
+          FB_PAGE_TOKEN: ${{ secrets.FB_PAGE_TOKEN }}
           # Non-secret tuning (safe to keep here):
           TARGET_LANGUAGE: EN
           TARGET_CURRENCY: ILS

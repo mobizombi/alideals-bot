@@ -3,6 +3,7 @@ import cron from 'node-cron';
 import { config } from './config.js';
 import { runOnce } from './run.js';
 import { checkChannel } from './telegram.js';
+import { checkFacebook } from './facebook.js';
 import { queryHotProducts } from './aliexpress.js';
 import { postedCount } from './store.js';
 
@@ -68,6 +69,17 @@ const commands = {
     console.log('Token + channel look good. Make sure the bot is an admin to post.');
   },
 
+  // Verify the Facebook Page token can post.
+  async ['test-fb']() {
+    const { configured, page } = await checkFacebook();
+    if (!configured) {
+      console.log('Facebook not configured (FB_PAGE_ID / FB_PAGE_TOKEN unset). Cross-posting is off.');
+      return;
+    }
+    console.log(`Facebook Page OK: ${page.name} (${page.id})`);
+    console.log('Token is valid and can post. Deals will mirror to this Page.');
+  },
+
   help() {
     console.log(`AliDealsBot
 
@@ -78,6 +90,7 @@ Usage:
   node src/index.js schedule           Run forever on POST_CRON (${config.posting.cron})
   node src/index.js test-ali           Check AliExpress API + show a sample product
   node src/index.js test-tg            Check Telegram bot + channel access
+  node src/index.js test-fb            Check Facebook Page token (cross-posting)
 `);
   },
 };

@@ -3,6 +3,7 @@ import { getDeals } from './products.js';
 import { getAmazonDeals } from './amazon.js';
 import { buildPost, buildAmazonPost } from './format.js';
 import { postDeal } from './telegram.js';
+import { postDealToFacebook } from './facebook.js';
 import { markPosted } from './store.js';
 
 // A "source" bundles where deals come from and how their post is built.
@@ -74,6 +75,15 @@ export async function runOnce(count = config.posting.perRun, { force = false, so
       markPosted(deal.id);
       posted += 1;
       console.log(`  ✓ posted ${deal.id} | ${deal.title.slice(0, 55)}`);
+
+      // Mirror to the Facebook Page. Never let a FB error undo the Telegram
+      // post that already went out - just log it and move on.
+      try {
+        const fb = await postDealToFacebook({ image: deal.image, images: deal.images, caption, url });
+        if (!fb.skipped) console.log(`  ✓ mirrored ${deal.id} -> Facebook Page`);
+      } catch (e) {
+        console.warn(`  ✗ Facebook mirror failed for ${deal.id}: ${e.message}`);
+      }
     } catch (e) {
       console.warn(`  ✗ failed to post ${deal.id}: ${e.message}`);
     }

@@ -56,6 +56,12 @@ export const config = {
       return req('TG_CHANNEL');
     },
   },
+  // Optional Facebook Page cross-posting. When both are set, every deal that
+  // goes to Telegram is also published to the Page. Leave unset to disable.
+  facebook: {
+    pageId: opt('FB_PAGE_ID'),
+    token: opt('FB_PAGE_TOKEN'),
+  },
   targeting: {
     language: opt('TARGET_LANGUAGE', 'EN'),
     currency: opt('TARGET_CURRENCY', 'USD'),
