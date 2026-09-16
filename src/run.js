@@ -4,7 +4,7 @@ import { getAmazonDeals } from './amazon.js';
 import { buildPost, buildAmazonPost } from './format.js';
 import { postDeal } from './telegram.js';
 import { postDealToFacebook } from './facebook.js';
-import { markPosted } from './store.js';
+import { markPosted, recordDeal } from './store.js';
 
 // A "source" bundles where deals come from and how their post is built.
 export const SOURCES = {
@@ -73,6 +73,7 @@ export async function runOnce(count = config.posting.perRun, { force = false, so
         url,
       });
       markPosted(deal.id);
+      recordDeal(deal, { source });
       posted += 1;
       console.log(`  ✓ posted ${deal.id} | ${deal.title.slice(0, 55)}`);
 

@@ -60,14 +60,33 @@ jobs:
 
       - name: Persist dedupe store
         run: |
-          if [[ -n "$(git status --porcelain data/posted.json)" ]]; then
+          if [[ -n "$(git status --porcelain data/posted.json data/deals.json)" ]]; then
             git config user.name "alideals-bot"
             git config user.email "bot@users.noreply.github.com"
-            git add data/posted.json
+            git add data/posted.json data/deals.json
             git commit -m "chore: update posted deals [skip ci]"
             git push
           else
             echo "No new deals to record."
           fi
+
+      # Rebuild the deals website from data/deals.json and publish it to the
+      # gh-pages branch (GitHub Pages). Runs every time so "found X days ago"
+      # labels stay current. Never fails the job over a site hiccup.
+      - name: Build + deploy website
+        continue-on-error: true
+        env:
+          SITE_BASE: /alideals-bot/
+          SITE_URL: https://mobizombi.github.io/alideals-bot/
+          SITE_INDEX: '0'
+        run: |
+          node site/build.mjs
+          cd dist
+          git init -q -b gh-pages
+          git config user.name "alideals-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add -A
+          git commit -qm "site: rebuild $(date -u +%FT%TZ)"
+          git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" gh-pages
 
 # (registered 1782905506)

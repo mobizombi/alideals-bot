@@ -5,3 +5,4 @@ node_modules/
 
 # NOTE: data/posted.json is intentionally TRACKED so the GitHub Actions
 # scheduled run can persist the dedupe list between runs. Do not ignore it.
+dist/

@@ -70,6 +70,7 @@ export async function getDeals(want = 1) {
   for (const p of raw) {
     if (seen.has(p.id)) continue;
     seen.add(p.id);
+    p.keyword = keyword || '';
     unique.push(p);
   }
 
