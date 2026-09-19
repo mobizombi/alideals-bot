@@ -8,6 +8,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { execFileSync } from 'node:child_process';
 import { CATEGORIES, GUIDES } from './content.mjs';
 import { loadDeals } from '../src/store.js';
 
@@ -134,6 +135,7 @@ ${jsonld.map((j) => `<script type="application/ld+json">${JSON.stringify(j)}</sc
     <nav class="nav">
       <a href="${href('deals/')}">דילים</a>
       <a href="${href('guides/')}">מדריכים</a>
+      <a href="${href('extension/')}">🧩 תוסף Chrome</a>
       <a class="nav-tg" href="${TG_URL}" target="_blank" rel="noopener">טלגרם</a>
     </nav>
   </div>
@@ -175,6 +177,7 @@ const add = (p, html) => pages.push({ p, html });
   <p>אנחנו סורקים אלפי מוצרים ומעלים רק את מה שעבר סינון: הנחה של 40% ומעלה, דירוג גבוה והרבה קונים מרוצים. בלי חיפושים, בלי הפתעות.</p>
   <div class="hero-cta">
     <a class="btn btn-tg" href="${TG_URL}" target="_blank" rel="noopener">הצטרפו לערוץ בטלגרם</a>
+    <a class="btn btn-ghost" href="${href('extension/')}">🧩 התקינו את תוסף Chrome</a>
     <a class="btn btn-ghost" href="${href('guides/how-to-buy-aliexpress-israel/')}">איך קונים באליאקספרס בלי להתאכזב</a>
   </div>
 </section>
@@ -319,6 +322,48 @@ ${tgBox()}
 );
 
 add(
+  'extension/',
+  layout({
+    title: 'תוסף Chrome - דילים יומיים בסרגל הכלים',
+    path: 'extension/',
+    description: `תוסף Chrome חינמי של ${BRAND}: הדיל הכי חם כל יום, ישר מסרגל הכלים. בלי הרשמה, בלי איסוף מידע אישי.`,
+    body: `<article class="guide">
+<h1>🧩 תוסף Chrome של ${BRAND}</h1>
+<p class="lead">רואים את הדילים הכי חמים ישר מסרגל הכלים של הדפדפן, בלי לפתוח את האתר כל פעם. חינמי, בלי הרשמה, ובלי איסוף מידע אישי.</p>
+
+<div class="guide-link">
+  <p style="margin:0 0 10px"><strong>שימו לב:</strong> התוסף עדיין לא ב-Chrome Web Store, אז ההתקנה היא ידנית (2 דקות, חד-פעמי). זה בטוח לגמרי - התוסף בקוד פתוח וניתן לבדיקה.</p>
+  <a class="btn btn-tg" href="${href('metziaon-extension.zip')}" download>⬇️ הורדת התוסף (ZIP)</a>
+</div>
+
+<h2>מה מקבלים</h2>
+<ul>
+  <li>🔥 <strong>פופאפ עם הדילים הכי טריים</strong> - ישר מסרגל הכלים, בלי לפתוח לשונית חדשה.</li>
+  <li>🔔 <strong>התראה יומית אחת</strong> עם הדיל הכי חם (אפשר לכבות בהגדרות בכל רגע).</li>
+  <li>🏷️ <strong>תג קטן בדפי מוצר באליאקספרס</strong> אם המוצר כבר מופיע אצלנו בדילים - בלי לשלוח שום מידע לשום שרת.</li>
+</ul>
+
+<h2>איך מתקינים (2 דקות)</h2>
+<ol>
+  <li>לוחצים על "הורדת התוסף" למעלה, ומחלצים (Extract / פתיחת קובץ ה-ZIP) את התיקייה שהתקבלה.</li>
+  <li>פותחים בכרום את הכתובת <code>chrome://extensions</code>.</li>
+  <li>מפעילים <strong>מצב מפתח</strong> (Developer mode) - מתג בפינה הימנית העליונה.</li>
+  <li>לוחצים <strong>טעינת תוסף בלתי ארוז</strong> (Load unpacked) ובוחרים את התיקייה <code>chrome-extension</code> שחילצתם.</li>
+  <li>זהו - האייקון של ${BRAND} מופיע בסרגל הכלים.</li>
+</ol>
+
+<h2>שאלות נפוצות</h2>
+<div class="faq">
+<details><summary>למה זה לא זמין ישירות מ-Chrome Web Store?</summary><p>עדיין לא פרסמנו את התוסף לחנות של גוגל. ההתקנה הידנית לוקחת 2 דקות, ואם ולכשנעלה אותו לחנות, כל מי שהתקין כבר ימשיך לקבל עדכונים כרגיל.</p></details>
+<details><summary>האם התוסף אוסף עליי מידע?</summary><p>לא. אין הרשמה, אין איסוף מידע אישי ואין מעקב אחרי הגלישה. התוסף שולף פיד דילים ציבורי מהאתר, ושומר את ההעדפות שלכם (קטגוריות, שעת התראה) מקומית בדפדפן בלבד.</p></details>
+<details><summary>איך מסירים את התוסף?</summary><p>נכנסים ל-<code>chrome://extensions</code>, מוצאים את ${BRAND} ולוחצים "הסר".</p></details>
+</div>
+${tgBox('רוצים גם את הדילים בטלגרם?')}
+</article>`,
+  })
+);
+
+add(
   'privacy/',
   layout({
     title: 'מדיניות פרטיות',
@@ -362,5 +407,44 @@ fs.writeFileSync(
 );
 fs.writeFileSync(path.join(OUT, 'robots.txt'), `User-agent: *\nAllow: /\nSitemap: ${abs('sitemap.xml')}\n`);
 fs.writeFileSync(path.join(OUT, '.nojekyll'), '');
+
+// Public, no-secrets JSON feed for the "מציאון" Chrome extension. Same data
+// that's already public on the website, just trimmed + machine-readable.
+// GitHub Pages serves this with permissive CORS, so the extension can fetch
+// it directly from chrome://extension code without a backend.
+const FEED_LIMIT = 60;
+const feed = {
+  generatedAt: new Date(NOW).toISOString(),
+  siteUrl: SITE_URL,
+  deals: deals.slice(0, FEED_LIMIT).map((d) => ({
+    id: d.id,
+    title: d.title,
+    image: thumb(d.image),
+    url: d.url,
+    price: d.price ?? null,
+    originalPrice: d.originalPrice ?? null,
+    currency: d.currency || 'ILS',
+    discount: d.discount || 0,
+    rating: d.rating ?? null,
+    orders: d.orders ?? null,
+    postedAt: d.postedAt,
+    cat: d.cat,
+    source: d.source || 'ali',
+  })),
+};
+fs.writeFileSync(path.join(OUT, 'feed.json'), JSON.stringify(feed));
+
+// Downloadable ZIP of the Chrome extension, linked from /extension/, so
+// people can install it before it's on the Chrome Web Store.
+const EXT_DIR = path.join(ROOT, 'chrome-extension');
+if (fs.existsSync(EXT_DIR)) {
+  try {
+    execFileSync('zip', ['-rq', path.join(OUT, 'metziaon-extension.zip'), 'chrome-extension'], {
+      cwd: ROOT,
+    });
+  } catch (err) {
+    console.warn('could not zip chrome-extension (zip not installed?) -', err.message);
+  }
+}
 
 console.log(`built ${pages.length} pages from ${deals.length} deals -> dist/ (base ${BASE}, indexable=${INDEXABLE})`);
