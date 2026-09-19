@@ -363,4 +363,30 @@ fs.writeFileSync(
 fs.writeFileSync(path.join(OUT, 'robots.txt'), `User-agent: *\nAllow: /\nSitemap: ${abs('sitemap.xml')}\n`);
 fs.writeFileSync(path.join(OUT, '.nojekyll'), '');
 
+// Public, no-secrets JSON feed for the "מציאון" Chrome extension. Same data
+// that's already public on the website, just trimmed + machine-readable.
+// GitHub Pages serves this with permissive CORS, so the extension can fetch
+// it directly from chrome://extension code without a backend.
+const FEED_LIMIT = 60;
+const feed = {
+  generatedAt: new Date(NOW).toISOString(),
+  siteUrl: SITE_URL,
+  deals: deals.slice(0, FEED_LIMIT).map((d) => ({
+    id: d.id,
+    title: d.title,
+    image: thumb(d.image),
+    url: d.url,
+    price: d.price ?? null,
+    originalPrice: d.originalPrice ?? null,
+    currency: d.currency || 'ILS',
+    discount: d.discount || 0,
+    rating: d.rating ?? null,
+    orders: d.orders ?? null,
+    postedAt: d.postedAt,
+    cat: d.cat,
+    source: d.source || 'ali',
+  })),
+};
+fs.writeFileSync(path.join(OUT, 'feed.json'), JSON.stringify(feed));
+
 console.log(`built ${pages.length} pages from ${deals.length} deals -> dist/ (base ${BASE}, indexable=${INDEXABLE})`);
