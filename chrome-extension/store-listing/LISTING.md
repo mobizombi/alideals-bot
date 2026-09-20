@@ -81,6 +81,18 @@ communications, Location, Web history, User activity, Website content) -
 third parties" ו-"I do not use or transfer user data for purposes unrelated
 to my item's single purpose".
 
+## קובץ ה-ZIP להעלאה (Package)
+
+חשוב: הקובץ שמעלים ל-devconsole **חייב** להכיל את `manifest.json` בשורש
+ה-ZIP עצמו (בלי תיקייה עוטפת) - זו דרישה טכנית של גוגל, לא סתם המלצה.
+לכן זה ZIP **שונה** מ-`metziaon-extension.zip` שבאתר (שמיועד ל"טעינת תוסף
+בלתי ארוז" ולכן כן עטוף בתיקייה).
+
+הקובץ הנכון להעלאה נבנה אוטומטית בכל הרצה של `node site/build.mjs`, בתור
+`dist/metziaon-extension-webstore.zip` - מכיל רק את קבצי הריצה של התוסף
+(בלי README/PROMO/store-listing). זה הקובץ שמעלים בשדה "Upload new
+package" בטופס ה-devconsole.
+
 ## נכסים גרפיים (Assets)
 
 כל הקבצים כבר בתיקייה הזו, בגדלים המדויקים שגוגל דורש:
