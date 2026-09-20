@@ -445,6 +445,31 @@ if (fs.existsSync(EXT_DIR)) {
   } catch (err) {
     console.warn('could not zip chrome-extension (zip not installed?) -', err.message);
   }
+
+  // Chrome Web Store upload package: the dashboard requires manifest.json at
+  // the zip's own root (no wrapping folder) and only the extension's runtime
+  // files - docs and store-listing assets don't belong in the shipped code.
+  const STORE_RUNTIME_FILES = [
+    'manifest.json',
+    'background.js',
+    'common.js',
+    'popup.html',
+    'popup.js',
+    'popup.css',
+    'options.html',
+    'options.js',
+    'options.css',
+    'content.js',
+    'content.css',
+    'icons',
+  ];
+  try {
+    execFileSync('zip', ['-rq', path.join(OUT, 'metziaon-extension-webstore.zip'), ...STORE_RUNTIME_FILES], {
+      cwd: EXT_DIR,
+    });
+  } catch (err) {
+    console.warn('could not build the Web Store upload zip -', err.message);
+  }
 }
 
 console.log(`built ${pages.length} pages from ${deals.length} deals -> dist/ (base ${BASE}, indexable=${INDEXABLE})`);
