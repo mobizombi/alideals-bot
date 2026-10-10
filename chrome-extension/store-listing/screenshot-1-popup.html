@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<style>
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; width: 1280px; height: 800px;
+    font-family: -apple-system, "Segoe UI", Arial, sans-serif;
+    background: linear-gradient(135deg, #fff3e8 0%, #ffe3cc 100%);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 34px;
+  }
+  .caption { text-align: center; direction: rtl; }
+  .caption h1 { font-size: 34px; margin: 0 0 8px; color: #7a2e00; font-weight: 800; }
+  .caption p { font-size: 16px; color: #a15b1f; margin: 0; line-height: 1.5; }
+
+  .browser {
+    width: 980px; border-radius: 14px; overflow: hidden;
+    box-shadow: 0 30px 70px rgba(0,0,0,.18);
+    background: #fff;
+  }
+  .chrome-bar {
+    background: #dee1e6; padding: 12px 16px; display: flex; align-items: center; gap: 10px;
+  }
+  .dots { display: flex; gap: 7px; }
+  .dot { width: 12px; height: 12px; border-radius: 50%; }
+  .d1 { background: #ff5f57; } .d2 { background: #febc2e; } .d3 { background: #28c840; }
+  .addr {
+    flex: 1; background: #fff; border-radius: 999px; padding: 8px 16px; font-size: 14px;
+    color: #444; margin-inline-start: 10px;
+  }
+  .toolbar {
+    background: #fff; padding: 8px 16px; display: flex; justify-content: flex-end;
+    border-bottom: 1px solid #eee; position: relative;
+  }
+  .ext-icon {
+    width: 34px; height: 34px; border-radius: 9px; background: #ff6a00;
+    display: flex; align-items: center; justify-content: center; font-size: 18px;
+    box-shadow: 0 2px 6px rgba(255,106,0,.5);
+  }
+  .page-body { height: 420px; background: #fbfbfb; }
+
+  /* popup, dropped from the toolbar icon */
+  .popup {
+    position: absolute; top: 52px; right: 16px; width: 380px;
+    background: #fafafa; border-radius: 12px; overflow: hidden;
+    box-shadow: 0 16px 40px rgba(0,0,0,.25);
+    direction: rtl; font-family: -apple-system, "Segoe UI", Arial, sans-serif;
+  }
+  .top { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; background: #ff6a00; color: #fff; }
+  .brand { font-weight: 800; font-size: 17px; }
+  .top-actions { display: flex; gap: 8px; }
+  .top-actions span { background: rgba(255,255,255,.2); border-radius: 8px; width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; }
+  .cats { display: flex; gap: 6px; padding: 10px 12px; background: #fff; border-bottom: 1px solid #eee; }
+  .cats span { border: 1px solid #ddd; border-radius: 999px; padding: 5px 11px; font-size: 12px; white-space: nowrap; }
+  .cats span.on { background: #ff6a00; border-color: #ff6a00; color: #fff; }
+  .list { padding: 10px; display: flex; flex-direction: column; gap: 9px; }
+  .deal { display: flex; gap: 11px; background: #fff; border: 1px solid #eee; border-radius: 11px; padding: 9px; }
+  .thumb { width: 60px; height: 60px; border-radius: 9px; flex: none; display: flex; align-items: center; justify-content: center; font-size: 26px; }
+  .info { min-width: 0; flex: 1; }
+  .title { font-size: 12.5px; line-height: 1.35; margin: 0 0 5px; color: #222; }
+  .price { font-size: 13.5px; font-weight: 800; margin: 0; }
+  .price s { font-weight: 400; color: #999; margin-inline-start: 5px; font-size: 11px; }
+  .badge { background: #ffe9d6; color: #d9480f; font-size: 11px; font-weight: 800; border-radius: 6px; padding: 2px 6px; margin-inline-start: 6px; }
+  .meta { font-size: 11px; color: #888; margin: 3px 0 0; }
+  .foot { padding: 9px 14px 11px; font-size: 11px; color: #888; text-align: center; border-top: 1px solid #eee; background: #fff; }
+</style>
+</head>
+<body>
+  <div class="caption">
+    <h1>הדילים הכי חמים, ישר מסרגל הכלים</h1>
+    <p>לחיצה אחת על האייקון - ורואים את הדילים הטריים ביותר מאליאקספרס, בלי לפתוח לשונית חדשה.</p>
+  </div>
+  <div class="browser">
+    <div class="chrome-bar">
+      <div class="dots"><span class="dot d1"></span><span class="dot d2"></span><span class="dot d3"></span></div>
+      <div class="addr">🔒 mobizombi.github.io/alideals-bot</div>
+    </div>
+    <div class="toolbar">
+      <div class="ext-icon">🛍️</div>
+      <div class="popup">
+        <div class="top">
+          <div class="brand">🛍️ מציאון</div>
+          <div class="top-actions"><span>↻</span><span>⚙️</span></div>
+        </div>
+        <div class="cats">
+          <span class="on">הכל</span><span>🍳 מטבח</span><span>📱 טלפון</span><span>🚗 רכב</span>
+        </div>
+        <div class="list">
+          <div class="deal">
+            <div class="thumb" style="background:#ffe3cc;">🔪</div>
+            <div class="info">
+              <p class="title">קולפן קיווי נירוסטה - סט 8 חלקים למטבח</p>
+              <p class="price">₪6.39<s>₪14.21</s><span class="badge">-55%</span></p>
+              <p class="meta">📦 13,937 הזמנות · ⭐ 98%</p>
+            </div>
+          </div>
+          <div class="deal">
+            <div class="thumb" style="background:#ffe0e0;">⌚</div>
+            <div class="info">
+              <p class="title">שעון חכם עמיד למים עם מד דופק</p>
+              <p class="price">₪49.90<s>₪129.90</s><span class="badge">-62%</span></p>
+              <p class="meta">📦 8,204 הזמנות · ⭐ 96%</p>
+            </div>
+          </div>
+          <div class="deal">
+            <div class="thumb" style="background:#e3f0ff;">💡</div>
+            <div class="info">
+              <p class="title">רצועת LED חכמה עם שלט ואפליקציה</p>
+              <p class="price">₪22.90<s>₪59.90</s><span class="badge">-62%</span></p>
+              <p class="meta">📦 5,410 הזמנות · ⭐ 94%</p>
+            </div>
+          </div>
+        </div>
+        <div class="foot">🔗 קישורי שותפים · בלי תוספת מחיר עבורכם</div>
+      </div>
+    </div>
+    <div class="page-body"></div>
+  </div>
+</body>
+</html>

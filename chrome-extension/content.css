@@ -1,0 +1,36 @@
+#metziaon-badge {
+  position: fixed;
+  top: 16px;
+  inset-inline-end: 16px;
+  z-index: 2147483647;
+  background: #ff6a00;
+  color: #fff;
+  font: 13px/1.4 -apple-system, "Segoe UI", Arial, sans-serif;
+  padding: 10px 14px;
+  border-radius: 10px;
+  box-shadow: 0 4px 16px rgba(0,0,0,.2);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  direction: rtl;
+  opacity: 0;
+  transform: translateY(-8px);
+  transition: opacity .2s ease, transform .2s ease;
+  max-width: 300px;
+}
+#metziaon-badge.metziaon-show {
+  opacity: 1;
+  transform: translateY(0);
+}
+#metziaon-badge button {
+  background: rgba(255,255,255,.25);
+  border: none;
+  color: #fff;
+  border-radius: 6px;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  flex: none;
+  font-size: 11px;
+  line-height: 1;
+}
