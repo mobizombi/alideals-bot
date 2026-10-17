@@ -98,3 +98,10 @@ test/selftest.mjs offline tests (signing, caption, filters)
 ```
 
 Run the offline tests anytime with `node test/selftest.mjs`.
+
+## Chrome extension
+
+`chrome-extension/` is a Manifest V3 extension ("מציאון") that shows the same
+deals feed in the browser toolbar, with an optional daily-digest notification.
+See `chrome-extension/README.md` for the plan, install steps, and an honest
+breakdown of Chrome Web Store vs. self-distribution.
