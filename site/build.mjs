@@ -120,7 +120,7 @@ ${INDEXABLE ? '' : '<meta name="robots" content="noindex, follow">\n'}<link rel=
 <meta property="og:title" content="${esc(full)}">
 <meta property="og:description" content="${esc(description)}">
 <meta property="og:url" content="${abs(p)}">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛍️</text></svg>">
+<link rel="icon" href="${href('assets/favicon.svg')}" type="image/svg+xml"><link rel="icon" href="${href('assets/favicon.ico')}" sizes="32x32"><link rel="apple-touch-icon" href="${href('assets/apple-touch-icon.png')}">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800&display=swap" rel="stylesheet">
@@ -342,6 +342,7 @@ for (const { p, html } of pages) {
 }
 fs.mkdirSync(path.join(OUT, 'assets'), { recursive: true });
 fs.copyFileSync(path.join(__dirname, 'style.css'), path.join(OUT, 'assets', 'style.css'));
+for (const f of ['favicon.svg', 'favicon.ico', 'apple-touch-icon.png']) fs.copyFileSync(path.join(__dirname, f), path.join(OUT, 'assets', f));
 
 fs.writeFileSync(
   path.join(OUT, '404.html'),
