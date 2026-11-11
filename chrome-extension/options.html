@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <title>הגדרות – מציאון</title>
+  <link rel="stylesheet" href="options.css" />
+</head>
+<body>
+  <h1>🛍️ הגדרות מציאון</h1>
+
+  <section>
+    <label class="row">
+      <input type="checkbox" id="digestEnabled" />
+      <span>שלחו לי התראה יומית עם הדיל הכי חם</span>
+    </label>
+    <label class="row" id="hourRow">
+      <span>בשעה</span>
+      <select id="digestHour"></select>
+    </label>
+  </section>
+
+  <section>
+    <h2>קטגוריות</h2>
+    <p class="hint">בחרו קטגוריות למעקב (ריק = הכל)</p>
+    <div id="cats" class="cats"></div>
+  </section>
+
+  <button id="save">שמירה</button>
+  <p id="saved" class="saved" hidden>נשמר ✓</p>
+
+  <hr />
+  <section class="privacy">
+    <h2>פרטיות</h2>
+    <p>
+      התוסף לא אוסף מידע אישי ולא עוקב אחרי הגלישה שלכם. הוא שולף פיד דילים ציבורי
+      מהאתר <a href="https://mobizombi.github.io/alideals-bot/" target="_blank" rel="noopener">מציאון</a>,
+      ושומר את ההעדפות שלכם (קטגוריות, שעת התראה) מקומית בדפדפן בלבד.
+    </p>
+    <p>
+      בדפי מוצר באליאקספרס התוסף בודק, מקומית ובלי שליחת נתונים לשום שרת, אם המוצר
+      מופיע בפיד הדילים - ואם כן מציג תג קטן. שום דבר לא נשלח החוצה.
+    </p>
+    <p>קישורי הדילים הם קישורי שותפים (affiliate) - זה לא משנה את המחיר עבורכם.</p>
+    <p>להסרת התוסף: <code>chrome://extensions</code> → מציאון → הסר.</p>
+  </section>
+
+  <script type="module" src="options.js"></script>
+</body>
+</html>
