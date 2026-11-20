@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://mobizombi.github.io/alideals-bot/sitemap.xml
