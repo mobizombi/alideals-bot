@@ -8,13 +8,23 @@ function pickKeyword() {
   return k[Math.floor(Math.random() * k.length)];
 }
 
+const HEBREW = /[\u0590-\u05FF]/;
+
+function hasLocalTitle(title) {
+  const lang = config.targeting.language.toUpperCase();
+  if (lang === 'HE' || lang === 'IW') return HEBREW.test(title);
+  return true;
+}
+
 function passesFilters(p) {
-  const { maxPrice, minDiscount, minRating } = config.targeting;
+  const { maxPrice, minDiscount, minRating, minOrders, requireLocalTitle } = config.targeting;
   if (!p.id || !p.title || !p.image) return false;
   if (!(p.price > 0)) return false;
   if (maxPrice != null && p.price > maxPrice) return false;
   if (minDiscount != null && p.discount < minDiscount) return false;
-  if (minRating != null && p.rating > 0 && p.rating < minRating) return false;
+  if (minRating != null && !(p.rating >= minRating)) return false;
+  if (minOrders != null && !(p.orders >= minOrders)) return false;
+  if (requireLocalTitle && !hasLocalTitle(p.title)) return false;
   if (wasPosted(p.id)) return false;
   return true;
 }
@@ -36,8 +46,21 @@ function score(p) {
  *
  * @param {number} want how many posts we ultimately need
  */
-export async function getDeals(want = 1) {
-  const keyword = pickKeyword();
+export async function getDeals(want = 1, { attempts = 3 } = {}) {
+  // Strict filters can empty a single keyword's pool, so try a few keywords.
+  const chosen = [];
+  const tried = new Set();
+  for (let i = 0; i < attempts && chosen.length < want; i++) {
+    let kw = pickKeyword();
+    for (let j = 0; j < 5 && tried.has(kw); j++) kw = pickKeyword();
+    tried.add(kw);
+    const more = await getDealsForKeyword(want - chosen.length, kw, chosen);
+    chosen.push(...more);
+  }
+  return chosen;
+}
+
+async function getDealsForKeyword(want, keyword, already = []) {
   const batches = [];
 
   // Hot products are the bread and butter.
@@ -74,7 +97,9 @@ export async function getDeals(want = 1) {
     unique.push(p);
   }
 
+  const skip = new Set(already.map((p) => p.id));
   const candidates = unique
+    .filter((p) => !skip.has(p.id))
     .filter(passesFilters)
     .sort((a, b) => score(b) - score(a));
 

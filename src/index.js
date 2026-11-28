@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 import cron from 'node-cron';
 import { config } from './config.js';
-import { runOnce } from './run.js';
+import { runOnce, runSlots } from './run.js';
+import { getDeals } from './products.js';
+import { buildPost } from './format.js';
 import { checkChannel } from './telegram.js';
 import { checkFacebook } from './facebook.js';
 import { queryHotProducts } from './aliexpress.js';
@@ -15,6 +17,25 @@ function arg(flag, fallback) {
 const cmd = process.argv[2] || 'post';
 
 const commands = {
+  // Peak-time mode (used by the GitHub Actions schedule): post the current
+  // POST_SLOTS slot's remaining quota, spaced out, then exit.
+  async slots() {
+    await runSlots();
+  },
+
+  // Dry run: fetch + filter deals and print the exact captions. Posts nothing.
+  async preview() {
+    const n = Number(arg('--count', 5));
+    const deals = await getDeals(n);
+    console.log(`preview: ${deals.length} deal(s) pass the filters\n`);
+    for (const d of deals) {
+      const { caption, buttonText, url } = buildPost(d);
+      console.log(`--- ${d.id} | ${d.discount}% off | rating ${d.rating} | ${d.orders} orders | ${d.keyword}`);
+      console.log(caption);
+      console.log(`[${buttonText}] -> ${url}\n`);
+    }
+  },
+
   // Post N AliExpress deals right now (default N = POSTS_PER_RUN). --force
   // ignores the active-hours window (handy for a manual test outside 08:00-24:00).
   async post() {

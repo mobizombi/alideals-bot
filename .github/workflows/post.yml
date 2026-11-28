@@ -4,13 +4,26 @@ name: Post AliExpress deal
 # commits the updated dedupe file back so products aren't repeated.
 on:
   schedule:
-    # GitHub cron is UTC and DST-unaware, so we fire every 30 min across a UTC
-    # window (05:00-21:59) that covers Israel 08:00-24:00 in BOTH summer (UTC+3)
-    # and winter (UTC+2). The code then gates the actual post to the exact
-    # Israel window (POST_WINDOW_START/END in Asia/Jerusalem), so a run outside
-    # 08:00-24:00 Israel time simply skips. Net result: 2 posts/hour, 8am-midnight.
-    - cron: '*/30 5-21 * * *'
-  workflow_dispatch: {} # lets you run it manually from the Actions tab
+    # Peak-time posting (Adam, 28 Nov 2026): 8-10 curated deals/day at lunch
+    # and 20:00-23:00 Israel. GitHub cron is UTC, DST-unaware AND throttled
+    # (most ticks get dropped or fire hours late), so these are just wake-ups
+    # covering both UTC+2 and UTC+3. The code (`slots` command) decides: a run
+    # inside a POST_SLOTS slot posts that slot's REMAINING quota, spaced out,
+    # and exits. Runs outside a slot, or after the quota is met, do nothing.
+    - cron: '7,37 9-11 * * *'   # lunch slot 12:00-14:00 Israel
+    - cron: '7,37 17-20 * * *'  # evening slot 20:00-23:00 Israel
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'slots = normal peak-time run; post = post N now (ignores slots); preview = print captions, post nothing'
+        required: false
+        default: slots
+        type: choice
+        options: [slots, post, preview]
+      count:
+        description: 'How many deals for post/preview'
+        required: false
+        default: '1'
 
 # Allow the job to push the updated data/posted.json back to the repo.
 permissions:
@@ -23,8 +36,14 @@ concurrency:
 jobs:
   post:
     runs-on: ubuntu-latest
+    # An evening slot spreads 6 posts over up to 3 hours.
+    timeout-minutes: 200
     steps:
+      # Check out the branch TIP (not the trigger SHA) so a queued run sees the
+      # dedupe/deals data the previous run committed.
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
 
       - uses: actions/setup-node@v4
         with:
@@ -43,28 +62,43 @@ jobs:
           FB_PAGE_ID: ${{ secrets.FB_PAGE_ID }}
           FB_PAGE_TOKEN: ${{ secrets.FB_PAGE_TOKEN }}
           # Non-secret tuning (safe to keep here):
-          TARGET_LANGUAGE: EN
+          TARGET_LANGUAGE: HE
           TARGET_CURRENCY: ILS
           SHIP_TO_COUNTRY: IL
           KEYWORDS: 'phone accessories,kitchen gadgets,home decor,smart watch,led lights,car accessories,tools'
+          # Stricter curation (28 Nov): real discount, proven sellers, rated.
           MAX_PRICE: '120'
-          MIN_DISCOUNT: '40'
-          MIN_RATING: '85'
+          MIN_DISCOUNT: '50'
+          MIN_RATING: '92'
+          MIN_ORDERS: '300'
+          REQUIRE_LOCAL_TITLE: 'true'
           POSTS_PER_RUN: '1'
           CAPTION_LANG: he
-          IMAGES_PER_POST: '3'
+          # One message per deal: single photo + caption + Buy button.
+          IMAGES_PER_POST: '1'
+          POST_SLOTS: '12-14:3,20-23:6'
+          POST_MIN_GAP_MINUTES: '20'
           POST_WINDOW_START: '8'
           POST_WINDOW_END: '24'
           POST_TZ: Asia/Jerusalem
-        run: node src/index.js post
+          MODE: ${{ github.event.inputs.mode || 'slots' }}
+          COUNT: ${{ github.event.inputs.count || '1' }}
+        run: |
+          case "$MODE" in
+            preview) node src/index.js preview --count "$COUNT" ;;
+            post)    node src/index.js post --count "$COUNT" --force ;;
+            *)       node src/index.js slots ;;
+          esac
 
       - name: Persist dedupe store
+        if: always()
         run: |
           if [[ -n "$(git status --porcelain data/posted.json data/deals.json)" ]]; then
             git config user.name "alideals-bot"
             git config user.email "bot@users.noreply.github.com"
             git add data/posted.json data/deals.json
             git commit -m "chore: update posted deals [skip ci]"
+            git pull --rebase -q || true
             git push
           else
             echo "No new deals to record."

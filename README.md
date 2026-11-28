@@ -63,7 +63,11 @@ nohup npm start > bot.log 2>&1 &
 - `CATEGORY_IDS` - optional AliExpress category ids to also pull hot products from.
 - `MAX_PRICE` - only post deals at/under this price (in `TARGET_CURRENCY`).
 - `MIN_DISCOUNT` - only post deals with at least this % off.
-- `MIN_RATING` - drop low-rated products.
+- `MIN_RATING` - drop low-rated products (unrated products are dropped too).
+- `MIN_ORDERS` - only post proven sellers with at least this many orders.
+- `REQUIRE_LOCAL_TITLE` - `true` drops products whose title did not come back in `TARGET_LANGUAGE` (e.g. no Hebrew letters for `HE`).
+- `POST_SLOTS` - peak-time slots for the `slots` command, `start-end:quota` in `POST_TZ`, e.g. `12-14:3,20-23:6`. Any run inside a slot posts the slot's remaining quota, spaced out (min `POST_MIN_GAP_MINUTES`). Used by the Actions schedule because GitHub cron is throttled and late.
+- `node src/index.js preview --count 5` - print the exact captions that would post, post nothing (also available as the `preview` mode of the workflow's manual run).
 - `IMAGES_PER_POST` - `1` = single photo; `2-4` = a photo album of the product's
   extra shots, followed by the Buy button (Telegram albums can't hold buttons).
 - `POSTS_PER_RUN` - how many deals per cycle.

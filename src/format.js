@@ -18,9 +18,13 @@ function esc(s = '') {
     .replace(/>/g, '&gt;');
 }
 
-function clip(title, max = 90) {
-  const t = title.trim();
-  return t.length > max ? `${t.slice(0, max - 1).trim()}…` : t;
+function clip(title, max = 80) {
+  const t = title.trim().replace(/\s+/g, ' ');
+  if (t.length <= max) return t;
+  // Cut on a word boundary so a Hebrew title never ends mid-word.
+  const cut = t.slice(0, max);
+  const sp = cut.lastIndexOf(' ');
+  return `${(sp > max * 0.6 ? cut.slice(0, sp) : cut).trim()}…`;
 }
 
 const FIRE = (d) => (d >= 70 ? '🔥🔥' : d >= 50 ? '🔥' : '');

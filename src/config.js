@@ -29,6 +29,18 @@ function num(name, fallback = null) {
   return Number.isFinite(n) ? n : fallback;
 }
 
+function parseSlots(spec) {
+  return spec
+    .split(',')
+    .map((x) => x.trim())
+    .filter(Boolean)
+    .map((x) => {
+      const m = x.match(/^(\d{1,2})-(\d{1,2}):(\d{1,2})$/);
+      if (!m) throw new Error(`Bad POST_SLOTS entry "${x}" (want start-end:quota)`);
+      return { start: +m[1], end: +m[2], quota: +m[3] };
+    });
+}
+
 export const config = {
   ali: {
     get appKey() {
@@ -71,6 +83,10 @@ export const config = {
     maxPrice: num('MAX_PRICE'),
     minDiscount: num('MIN_DISCOUNT'),
     minRating: num('MIN_RATING'),
+    minOrders: num('MIN_ORDERS'),
+    // When true, drop products whose title did not come back in the target
+    // language (e.g. no Hebrew letters while TARGET_LANGUAGE=HE).
+    requireLocalTitle: opt('REQUIRE_LOCAL_TITLE', 'false') === 'true',
   },
   posting: {
     perRun: num('POSTS_PER_RUN', 1),
@@ -78,6 +94,10 @@ export const config = {
     captionLang: opt('CAPTION_LANG', 'he').toLowerCase(),
     delaySeconds: num('POST_DELAY_SECONDS', 8),
     imagesPerPost: Math.max(1, Math.min(4, num('IMAGES_PER_POST', 3))),
+    // Peak-time slots for the `slots` command: "startHour-endHour:quota,..."
+    // in POST_TZ. e.g. "12-14:3,20-23:6" = 3 deals over lunch, 6 in the evening.
+    slots: parseSlots(opt('POST_SLOTS', '')),
+    minGapMinutes: num('POST_MIN_GAP_MINUTES', 20),
   },
   // Active hours, evaluated in POST_TZ so it stays correct across DST. Posts
   // only go out when the local hour is in [start, end). end=24 means through 23:59.

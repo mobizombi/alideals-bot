@@ -4,7 +4,7 @@ import { getAmazonDeals } from './amazon.js';
 import { buildPost, buildAmazonPost } from './format.js';
 import { postDeal } from './telegram.js';
 import { postDealToFacebook } from './facebook.js';
-import { markPosted, recordDeal } from './store.js';
+import { markPosted, recordDeal, loadDeals } from './store.js';
 
 // A "source" bundles where deals come from and how their post is built.
 export const SOURCES = {
@@ -92,5 +92,73 @@ export async function runOnce(count = config.posting.perRun, { force = false, so
   }
 
   console.log(`[${stamp}] [${src.label}] done. posted ${posted}/${count}.`);
+  return posted;
+}
+
+/** Local {date: 'YYYY-MM-DD', hour, minute} for a Date in POST_TZ. */
+function localParts(d = new Date()) {
+  const parts = Object.fromEntries(
+    new Intl.DateTimeFormat('en-CA', {
+      timeZone: config.window.tz,
+      year: 'numeric', month: '2-digit', day: '2-digit',
+      hour: '2-digit', minute: '2-digit', hourCycle: 'h23',
+    })
+      .formatToParts(d)
+      .map((p) => [p.type, p.value])
+  );
+  return { date: `${parts.year}-${parts.month}-${parts.day}`, hour: +parts.hour, minute: +parts.minute };
+}
+
+/** The POST_SLOTS slot we are inside right now, or null. */
+export function currentSlot(now = new Date()) {
+  const { hour } = localParts(now);
+  return config.posting.slots.find((s) => hour >= s.start && hour < s.end) || null;
+}
+
+/** How many deals already went out today inside this slot (from data/deals.json). */
+function postedInSlot(slot, now = new Date()) {
+  const today = localParts(now).date;
+  return loadDeals().filter((d) => {
+    if (!d.postedAt) return false;
+    const p = localParts(new Date(d.postedAt));
+    return p.date === today && p.hour >= slot.start && p.hour < slot.end;
+  }).length;
+}
+
+/** Minutes left until the slot closes. */
+function minutesLeft(slot, now = new Date()) {
+  const { hour, minute } = localParts(now);
+  return (slot.end - hour) * 60 - minute;
+}
+
+/**
+ * Peak-time posting. GitHub's cron is throttled and often hours late, so we
+ * do not rely on its timing: any run that lands inside a slot posts the
+ * slot's REMAINING quota (counted from deals.json), spread evenly over the
+ * time left, then exits. Later runs in the same slot find the quota met.
+ */
+export async function runSlots() {
+  const slot = currentSlot();
+  const stamp = new Date().toISOString();
+  if (!slot) {
+    const { hour } = localParts();
+    console.log(`[${stamp}] not in a posting slot (local hour ${hour}, slots ${JSON.stringify(config.posting.slots)}); skipping.`);
+    return 0;
+  }
+  let remaining = slot.quota - postedInSlot(slot);
+  console.log(`[${stamp}] slot ${slot.start}-${slot.end} quota ${slot.quota}, remaining ${remaining}.`);
+  let posted = 0;
+  let misses = 0;
+  while (remaining > 0 && minutesLeft(slot) > 0 && misses < 3) {
+    const n = await runOnce(1, { force: true, source: 'ali' });
+    if (n) { posted += n; remaining -= n; misses = 0; } else { misses += 1; }
+    if (remaining <= 0) break;
+    const left = minutesLeft(slot);
+    const gap = Math.max(config.posting.minGapMinutes, Math.floor(left / (remaining + 1)));
+    if (gap >= left) break;
+    console.log(`  next post in ${gap} min (${remaining} left, ${left} min left in slot)`);
+    await sleep(gap * 60 * 1000);
+  }
+  console.log(`[${new Date().toISOString()}] slot done. posted ${posted} this run.`);
   return posted;
 }
