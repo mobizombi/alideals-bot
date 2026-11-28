@@ -33,6 +33,11 @@ const commands = {
       console.log(`--- ${d.id} | ${d.discount}% off | rating ${d.rating} | ${d.orders} orders | ${d.keyword}`);
       console.log(caption);
       console.log(`[${buttonText}] -> ${url}\n`);
+      // On Actions, also surface it as an annotation (readable via the API).
+      if (process.env.GITHUB_ACTIONS) {
+        const enc = (x) => String(x).replace(/%/g, '%25').replace(/\r/g, '%0D').replace(/\n/g, '%0A');
+        console.log(`::notice title=preview ${d.id}::${enc(`${caption}\n[${buttonText}] -> ${url}`)}`);
+      }
     }
   },
 
