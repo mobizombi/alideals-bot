@@ -24,7 +24,7 @@ function clip(title, max = 80) {
   // Cut on a word boundary so a Hebrew title never ends mid-word.
   const cut = t.slice(0, max);
   const sp = cut.lastIndexOf(' ');
-  return `${(sp > max * 0.6 ? cut.slice(0, sp) : cut).trim()}…`;
+  return `${(sp > max * 0.6 ? cut.slice(0, sp) : cut).trim().replace(/[\s,.;:\-–]+$/, '')}…`;
 }
 
 const FIRE = (d) => (d >= 70 ? '🔥🔥' : d >= 50 ? '🔥' : '');
