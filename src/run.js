@@ -12,6 +12,27 @@ export const SOURCES = {
   amazon: { label: 'Amazon', fetch: getAmazonDeals, build: buildAmazonPost },
 };
 
+/**
+ * Audit trail for each post: what Telegram actually stored (one message?
+ * photo? button?) and whether the Buy link really lands on AliExpress.
+ * Printed as an Actions annotation so it can be read via the GitHub API.
+ */
+async function reportPost(deal, msg, url) {
+  const btn = msg?.reply_markup?.inline_keyboard?.[0]?.[0];
+  let landing = 'unchecked';
+  try {
+    const r = await fetch(url, { redirect: 'manual' });
+    landing = `${r.status} -> ${(r.headers.get('location') || '').slice(0, 80)}`;
+  } catch (e) {
+    landing = `error ${e.message}`;
+  }
+  const line =
+    `tg message_id=${msg?.message_id} photo=${!!msg?.photo} album=${!!msg?.media_group_id} ` +
+    `button="${btn?.text || 'NONE'}" button_url=${btn?.url || 'NONE'} landing=${landing} ` +
+    `title=${(deal.title || '').slice(0, 70)}`;
+  console.log(process.env.GITHUB_ACTIONS ? `::notice title=posted ${deal.id}::${line}` : `  ${line}`);
+}
+
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 /** Current hour (0-23) in the configured timezone, DST-aware. */
@@ -64,7 +85,7 @@ export async function runOnce(count = config.posting.perRun, { force = false, so
     if (posted >= count) break;
     const { caption, buttonText, followText, url } = src.build(deal);
     try {
-      await postDeal({
+      const msg = await postDeal({
         image: deal.image,
         images: deal.images,
         caption,
@@ -76,6 +97,7 @@ export async function runOnce(count = config.posting.perRun, { force = false, so
       recordDeal(deal, { source });
       posted += 1;
       console.log(`  ✓ posted ${deal.id} | ${deal.title.slice(0, 55)}`);
+      await reportPost(deal, msg, url);
 
       // Mirror to the Facebook Page. Never let a FB error undo the Telegram
       // post that already went out - just log it and move on.
